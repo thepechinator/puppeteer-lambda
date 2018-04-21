@@ -59,7 +59,8 @@ module.exports = async (baselineImageData, testImageData) => {
 
     // The diff should be stored somewhere. Convert to base64 string for upload to s3
     const diffBinaryData = await sharp(diffBuffer, { raw: { width, height, channels: 4 } })
-      .png();
+      .png()
+      .toBuffer()
     // const diffBase64String = Buffer.from(diffBinaryData, 'binary').toString('base64');
 
     return {
