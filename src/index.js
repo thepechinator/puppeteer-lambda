@@ -61,9 +61,9 @@ exports.run = async (browser, { url, snapshotIdentifier, debugId, baselineBase64
 
   console.info(debugId, 'trying to do diff');
   // also do the diff
-  const { diffPixelCount, diffBase64String } = await imageDiff(baselineBase64String, screenshot);
+  const { diffPixelCount, diffBinaryData } = await imageDiff(baselineBase64String, screenshot);
   console.info(debugId, 'trying to upload diff to s3');
-  const diffPath = await uploadToS3(diffBase64String, 'image/png', `${snapshotIdentifier}_diff`);
+  const diffPath = await uploadToS3(diffBinaryData, 'image/png', `${snapshotIdentifier}_diff`);
   // await s3.putObject({
   //   Bucket: process,
   //   Key: 'screenshot.png',
