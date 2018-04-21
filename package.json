@@ -11,11 +11,8 @@
     "lint": "./node_modules/.bin/eslint src"
   },
   "dependencies": {
-    "mkdirp": "^0.5.1",
     "pixelmatch": "^4.0.2",
-    "pngjs": "^3.3.3",
     "puppeteer": "^1.1.1",
-    "rimraf": "^2.6.2",
     "sharp": "^0.20.1",
     "tar": "^4.0.1",
     "uuid": "^3.2.1"

@@ -1,37 +1,37 @@
 const setup = require('./starter-kit/setup');
 const {uploadToS3} = require('./starter-kit/uploader');
-require('./starter-kit/image-diff');
+const imageDiff = require('./starter-kit/image-diff');
 
 exports.handler = async (event, context, callback) => {
-  const {url, snapshotIdentifier} = JSON.parse(event.body);
-  console.info('received', url, snapshotIdentifier);
+  const { url, snapshotIdentifier, debugId, baselineBase64String } = JSON.parse(event.body);
+  console.info(debugId, 'received', url, snapshotIdentifier);
   // For keeping the browser launch
   context.callbackWaitsForEmptyEventLoop = false;
   const browser = await setup.getBrowser();
-  exports.run(browser, {url, snapshotIdentifier}).then(
+  exports.run(browser, { url, snapshotIdentifier, debugId, baselineBase64String }).then(
     (result) => callback(null, {
       statusCode: 200,
       body: JSON.stringify({status: 200, result})})
   ).catch(
     (err) => {
-      console.info('ran into error');
+      console.info(debugId, 'ran into error');
       console.info(err);
       callback(err);
     }
   );
 };
 
-exports.run = async (browser, {url, snapshotIdentifier}) => {
+exports.run = async (browser, { url, snapshotIdentifier, debugId, baselineBase64String }) => {
   // implement here
   // this is sample
-  console.info('opening new page..');
-  console.info('browser', browser);
+  console.info(debugId, 'opening new page..');
+  console.info(debugId, 'browser', browser);
   const page = await browser.newPage();
   await page.setViewport({width: 1024, height: 768});
-  console.info('trying to go to page...');
+  console.info(debugId, 'trying to go to page...');
   await page.goto(url, {waitUntil: 'networkidle0', timeout: 10000});
   // console.log((await page.content()).slice(0, 500));
-  console.info('past page load..');
+  console.info(debugId, 'past page load..');
   // await page.type('#lst-ib', 'aaaaa');
   // // avoid to timeout waitForNavigation() after click()
   // await Promise.all([
@@ -40,14 +40,14 @@ exports.run = async (browser, {url, snapshotIdentifier}) => {
   //   page.waitForNavigation(),
   //   page.click('[name=btnK]'),
   // ]);
-  console.info('trying to take a screenshot');
+  console.info(debugId, 'trying to take a screenshot');
   await page.screenshot({
     path: '/tmp/screenshot.jpeg', type: 'jpeg', quality: 50});
   // , fullPage: true});
 
   // const aws = require('aws-sdk');
   // const s3 = new aws.S3({apiVersion: '2006-03-01'});
-  console.info('trying to read from the screenshot file');
+  console.info(debugId, 'trying to read from the screenshot file');
   const fs = require('fs');
   const screenshot = await new Promise((resolve, reject) => {
     fs.readFile('/tmp/screenshot.jpeg', (err, data) => {
@@ -55,9 +55,15 @@ exports.run = async (browser, {url, snapshotIdentifier}) => {
       resolve(data);
     });
   });
-  console.info('trying to upload file..');
+  console.info(debugId, 'trying to upload file..');
   const screenshotPath =
     await uploadToS3(screenshot, 'image/jpeg', snapshotIdentifier);
+
+  console.info(debugId, 'trying to do diff');
+  // also do the diff
+  const { diffPixelCount, diffBase64String } = await imageDiff(baselineBase64String, screenshot);
+  console.info(debugId, 'trying to upload diff to s3');
+  const diffPath = await uploadToS3(diffBase64String, 'image/png', `${snapshotIdentifier}_diff`);
   // await s3.putObject({
   //   Bucket: process,
   //   Key: 'screenshot.png',
@@ -73,6 +79,8 @@ exports.run = async (browser, {url, snapshotIdentifier}) => {
   //   localStorage.setItem('name', 'localStorageValue');
   //   return localStorage.getItem('name');
   // }));
+  console.info(debugId, 'closing page');
   await page.close();
-  return screenshotPath;
+  console.info(debugId, 'returning data');
+  return { screenshotPath, diffPath, diffPixelCount };
 };
