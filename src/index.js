@@ -3,12 +3,12 @@ const {uploadToS3} = require('./starter-kit/uploader');
 const imageDiff = require('./starter-kit/image-diff');
 
 exports.handler = async (event, context, callback) => {
-  const { url, snapshotIdentifier, debugId, baseline64String, viewport } = JSON.parse(event.body);
+  const { url, snapshotIdentifier, debugId, baselineBase64String, viewport } = JSON.parse(event.body);
   console.info(debugId, 'received', url, snapshotIdentifier);
   // For keeping the browser launch
   context.callbackWaitsForEmptyEventLoop = false;
   const browser = await setup.getBrowser();
-  exports.run(browser, { url, snapshotIdentifier, debugId, baseline64String, viewport }).then(
+  exports.run(browser, { url, snapshotIdentifier, debugId, baselineBase64String, viewport }).then(
     (result) => callback(null, {
       statusCode: 200,
       body: JSON.stringify({status: 200, result})})
