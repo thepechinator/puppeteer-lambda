@@ -42,7 +42,7 @@ exports.run = async (browser, { url, snapshotIdentifier, debugId, baselineBase64
   // ]);
   console.info(debugId, 'trying to take a screenshot');
   await page.screenshot({
-    path: '/tmp/screenshot.jpg', type: 'jpg', quality: 50});
+    path: '/tmp/screenshot.jpg', type: 'jpeg', quality: 50});
   // , fullPage: true});
 
   // const aws = require('aws-sdk');
