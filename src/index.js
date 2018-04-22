@@ -42,7 +42,7 @@ exports.run = async (browser, { url, snapshotIdentifier, debugId, baselineBase64
   // ]);
   console.info(debugId, 'trying to take a screenshot');
   await page.screenshot({
-    path: '/tmp/screenshot.jpeg', type: 'jpeg', quality: 50});
+    path: '/tmp/screenshot.jpg', type: 'jpg', quality: 50});
   // , fullPage: true});
 
   // const aws = require('aws-sdk');
@@ -57,7 +57,7 @@ exports.run = async (browser, { url, snapshotIdentifier, debugId, baselineBase64
   });
   console.info(debugId, 'trying to upload file..');
   const screenshotPath =
-    await uploadToS3(screenshot, 'image/jpeg', snapshotIdentifier);
+    await uploadToS3(screenshot, 'image/jpg', snapshotIdentifier);
 
   console.info(debugId, 'trying to do diff');
   // also do the diff
