@@ -3,19 +3,19 @@ const s3 = new aws.S3({apiVersion: '2006-03-01'});
 // const uuidv4 = require('uuid/v4');
 
 function getS3BucketName() {
-  return process.env['CHROME_S3_BUCKET_NAME']
+  return process.env['CHROME_S3_BUCKET_NAME'];
 }
 
 function getS3BucketUrl() {
-  return process.env['CHROME_S3_BUCKET_URL']
+  return process.env['CHROME_S3_BUCKET_URL'];
 }
 
 function getS3ObjectKeyPrefix() {
-  return process.env['CHROME_S3_OBJECT_KEY_PREFIX'] || ''
+  return process.env['CHROME_S3_OBJECT_KEY_PREFIX'] || '';
 }
 
 function getS3FilesPermissions() {
-  return process.env['CHROME_S3_OBJECT_ACL'] || 'public-read'
+  return process.env['CHROME_S3_OBJECT_ACL'] || 'public-read';
 }
 
 // const isS3Configured = () => {
@@ -47,7 +47,7 @@ const uploadToS3 = async (
   if (!s3ContentType) {
     throw new Error(`Unknown S3 Content type ${contentType}`);
   }
-  const s3Path = `${getS3ObjectKeyPrefix()}${snapshotIdentifier}.${s3ContentType.extension}`
+  const s3Path = `${getS3ObjectKeyPrefix()}${snapshotIdentifier}.${s3ContentType.extension}`;
   await s3
     .putObject({
       Bucket: getS3BucketName(),

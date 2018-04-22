@@ -50,7 +50,7 @@ exports.run = async (browser, { url, snapshotIdentifier, debugId, baselineBase64
   console.info(debugId, 'trying to read from the screenshot file');
   const fs = require('fs');
   const screenshot = await new Promise((resolve, reject) => {
-    fs.readFile('/tmp/screenshot.jpeg', (err, data) => {
+    fs.readFile('/tmp/screenshot.jpg', (err, data) => {
       if (err) return reject(err);
       resolve(data);
     });
