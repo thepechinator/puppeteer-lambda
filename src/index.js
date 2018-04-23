@@ -3,12 +3,12 @@ const {uploadToS3} = require('./starter-kit/uploader');
 const imageDiff = require('./starter-kit/image-diff');
 
 exports.handler = async (event, context, callback) => {
-  const { url, snapshotIdentifier, debugId, baselineBase64String, viewport } = JSON.parse(event.body);
+  const { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config } = JSON.parse(event.body);
   console.info(debugId, 'received', url, snapshotIdentifier);
   // For keeping the browser launch
   context.callbackWaitsForEmptyEventLoop = false;
   const browser = await setup.getBrowser();
-  exports.run(browser, { url, snapshotIdentifier, debugId, baselineBase64String, viewport }).then(
+  exports.run(browser, { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config }).then(
     (result) => callback(null, {
       statusCode: 200,
       body: JSON.stringify({status: 200, result})})
@@ -28,15 +28,20 @@ exports.run = async (browser,
     debugId,
     baselineBase64String,
     viewport = { width: 1024, height: 768 },
+    // will contain some stuff we don't need for now,
+    // but has some stuff we want
+    config,
   } = {}) => {
   // implement here
   // this is sample
   console.info(debugId, 'opening new page..');
   console.info(debugId, 'browser', browser);
   const page = await browser.newPage();
+  // change to the right resolution
   await page.setViewport({width: viewport.width, height: viewport.height});
   console.info(debugId, 'trying to go to page...');
-  await page.goto(url, {waitUntil: 'networkidle0', timeout: 10000});
+  // wait for the right event
+  await page.goto(url, {waitUntil: 'networkidle0', timeout: config.timeout});
   // console.log((await page.content()).slice(0, 500));
   console.info(debugId, 'past page load..');
   // await page.type('#lst-ib', 'aaaaa');
@@ -68,16 +73,35 @@ exports.run = async (browser,
 
   console.info(debugId, 'trying to do diff');
 
-  let diffPath = '';
-  let diffPixelCount = null;
+  let resultObject = {
+    baselineScreenshotPath: screenshotPath,
+  };
 
   // also do the diff, if baselineBase64String exists
   if (baselineBase64String) {
-    const result = await imageDiff(baselineBase64String, screenshot);
-    const diffBinaryData = result.diffBinaryData;
-    diffPixelCount = result.diffPixelCount;
+    const { diffPixelCount, diffBinaryData, pass } = await imageDiff(baselineBase64String, screenshot);
     console.info(debugId, 'trying to upload diff to s3');
-    diffPath = await uploadToS3(diffBinaryData, 'image/png', `${snapshotIdentifier}_diff`);  
+    const diffPath = await uploadToS3(diffBinaryData, 
+      'image/png', `${snapshotIdentifier}--diff`, 
+      {
+        failureThreshold: config.failureThreshold,
+        failureThresholdType: config.failureThresholdType,
+      }
+    );  
+
+    resultObject.performedDiff = true;
+    resultObject.diffPath = diffPath;
+    resultObject.diffPixelCount = diffPixelCount;
+    resultObject.pass = pass;
+  } else {
+    if (config.autoAddNewBaselines) {
+      console.info(debugId, 'adding new baseline to imageData');
+      resultObject.imageData = {
+        newBaselineBase64String: screenshot,
+      };
+    }
+
+    resultObject.performedDiff = false;
   }
   // await s3.putObject({
   //   Bucket: process,
@@ -97,5 +121,5 @@ exports.run = async (browser,
   console.info(debugId, 'closing page');
   await page.close();
   console.info(debugId, 'returning data');
-  return { screenshotPath, diffPath, diffPixelCount };
+  return resultObject;
 };

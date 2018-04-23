@@ -7,7 +7,7 @@ const pixelmatch = require('pixelmatch');
 const sharp = require('sharp');
 
 // both of these should be base64 strings for now
-module.exports = async (baselineImageData, testImageData) => {
+module.exports = async (baselineImageData, testImageData, { failureThresholdType = 'percent', failureThreshold = 0.1 } = {}) => {
     const baselineBinaryData = Buffer.from(baselineImageData, 'base64');
     const testBinaryData = Buffer.from(testImageData, 'base64');
 
@@ -63,8 +63,26 @@ module.exports = async (baselineImageData, testImageData) => {
       .toBuffer();
     // const diffBase64String = Buffer.from(diffBinaryData, 'binary').toString('base64');
 
+    const totalPixels = width * height;
+    const diffRatio = diffPixelCount / totalPixels;
+
+    // not used for now
+    const hasSizeMismatch = false;
+    let pass = false;
+    if (hasSizeMismatch) {
+      // Always fail test on image size mismatch
+      pass = false;
+    } else if (failureThresholdType === 'pixel') {
+      pass = diffPixelCount <= failureThreshold;
+    } else if (failureThresholdType === 'percent') {
+      pass = diffRatio <= failureThreshold;
+    } else {
+      throw new Error(`Unknown failureThresholdType: ${failureThresholdType}. Valid options are "pixel" or "percent".`);
+    }
+
     return {
         diffPixelCount,
         diffBinaryData,
+        pass,
     };
 };
