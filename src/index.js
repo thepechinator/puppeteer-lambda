@@ -4,7 +4,8 @@ const imageDiff = require('./starter-kit/image-diff');
 
 exports.handler = async (event, context, callback) => {
   const { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config } = JSON.parse(event.body);
-  console.info(debugId, 'received', url, snapshotIdentifier);
+  console.info(debugId, 'received url', url, 'and snapshotIdentifier', snapshotIdentifier);
+  console.info(debugId, 'with config', config);
   // For keeping the browser launch
   context.callbackWaitsForEmptyEventLoop = false;
   const browser = await setup.getBrowser();
@@ -79,7 +80,7 @@ exports.run = async (browser,
 
   // also do the diff, if baselineBase64String exists
   if (baselineBase64String) {
-    const { diffPixelCount, diffBinaryData, pass } = await imageDiff(baselineBase64String, screenshot, 
+    const { diffPixelCount, diffRatio, totalPixels, diffBinaryData, pass } = await imageDiff(baselineBase64String, screenshot, 
       {
         failureThreshold: config.failureThreshold,
         failureThresholdType: config.failureThresholdType,
@@ -90,6 +91,8 @@ exports.run = async (browser,
       'image/png', `${snapshotIdentifier}--diff`,
     );
 
+    resultObject.diffRatio = diffRatio;
+    resultObject.totalPixels = totalPixels;
     resultObject.performedDiff = true;
     resultObject.diffPath = diffPath;
     resultObject.diffPixelCount = diffPixelCount;

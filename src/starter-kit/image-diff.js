@@ -81,6 +81,8 @@ module.exports = async (baselineImageData, testImageData, { failureThresholdType
     }
 
     return {
+        totalPixels,
+        diffRatio,
         diffPixelCount,
         diffBinaryData,
         pass,
