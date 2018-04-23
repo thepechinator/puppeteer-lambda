@@ -76,6 +76,7 @@ exports.run = async (browser,
 
   let resultObject = {
     baselineScreenshotPath: screenshotPath,
+    url,
   };
 
   // also do the diff, if baselineBase64String exists
