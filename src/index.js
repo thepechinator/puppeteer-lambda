@@ -79,15 +79,16 @@ exports.run = async (browser,
 
   // also do the diff, if baselineBase64String exists
   if (baselineBase64String) {
-    const { diffPixelCount, diffBinaryData, pass } = await imageDiff(baselineBase64String, screenshot);
-    console.info(debugId, 'trying to upload diff to s3');
-    const diffPath = await uploadToS3(diffBinaryData, 
-      'image/png', `${snapshotIdentifier}--diff`, 
+    const { diffPixelCount, diffBinaryData, pass } = await imageDiff(baselineBase64String, screenshot, 
       {
         failureThreshold: config.failureThreshold,
         failureThresholdType: config.failureThresholdType,
       }
-    );  
+    );
+    console.info(debugId, 'trying to upload diff to s3');
+    const diffPath = await uploadToS3(diffBinaryData, 
+      'image/png', `${snapshotIdentifier}--diff`,
+    );
 
     resultObject.performedDiff = true;
     resultObject.diffPath = diffPath;
