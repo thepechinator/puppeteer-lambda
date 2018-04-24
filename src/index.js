@@ -42,7 +42,9 @@ exports.run = async (browser,
   await page.setViewport({width: viewport.width, height: viewport.height});
   console.info(debugId, 'trying to go to page...');
   // wait for the right event
-  await page.goto(url, {waitUntil: 'networkidle0', timeout: config.timeout});
+  // waitUntil: 'networkidle0', 
+  // waitUntil: 'networkidle2', 
+  await page.goto(url, {timeout: config.timeout});
   // console.log((await page.content()).slice(0, 500));
   console.info(debugId, 'past page load..');
   // await page.type('#lst-ib', 'aaaaa');
