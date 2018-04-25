@@ -1,6 +1,7 @@
 const setup = require('./starter-kit/setup');
 const {uploadToS3} = require('./starter-kit/uploader');
 const imageDiff = require('./starter-kit/image-diff');
+const moment = require('moment');
 
 exports.handler = async (event, context, callback) => {
   const { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config } = JSON.parse(event.body);
@@ -116,6 +117,7 @@ exports.run = async (browser,
 
     resultObject.performedDiff = false;
   }
+  resultObject.returnTime = moment().format('MM/DD/YYYY H:MM:ss');
   // await s3.putObject({
   //   Bucket: process,
   //   Key: 'screenshot.png',
