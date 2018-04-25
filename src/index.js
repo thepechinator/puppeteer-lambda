@@ -117,7 +117,7 @@ exports.run = async (browser,
 
     resultObject.performedDiff = false;
   }
-  resultObject.returnTime = moment().format('MM/DD/YYYY H:MM:ss');
+  resultObject.returnTime = moment().format('MM/DD/YYYY HH:mm:ss');
   // await s3.putObject({
   //   Bucket: process,
   //   Key: 'screenshot.png',
