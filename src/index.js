@@ -43,7 +43,8 @@ exports.run = async (browser,
   console.info(debugId, 'trying to go to page...');
   // wait for the right event
   // waitUntil: 'networkidle0', 
-  // waitUntil: 'networkidle2', 
+  // waitUntil: 'networkidle2',
+  // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#pagegotourl-options
   await page.goto(url, {timeout: config.timeout});
   // console.log((await page.content()).slice(0, 500));
   console.info(debugId, 'past page load..');
@@ -57,7 +58,7 @@ exports.run = async (browser,
   // ]);
   console.info(debugId, 'trying to take a screenshot');
   await page.screenshot({
-    path: '/tmp/screenshot.jpg', type: 'jpeg', quality: 50});
+    path: '/tmp/screenshot.jpg', type: 'jpeg', quality: 50, fullPage: true });
   // , fullPage: true});
 
   // const aws = require('aws-sdk');
