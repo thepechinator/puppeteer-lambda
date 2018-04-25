@@ -85,7 +85,7 @@ exports.run = async (browser,
   };
 
   // also do the diff, if baselineBase64String exists
-  if (baselineBase64String) {
+  if (false) {
     const { diffPixelCount, diffRatio, totalPixels, diffBinaryData, pass } = await imageDiff(baselineBase64String, screenshot, 
       {
         failureThreshold: config.failureThreshold,
