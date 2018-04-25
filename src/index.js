@@ -57,9 +57,9 @@ exports.run = async (browser,
   //   page.click('[name=btnK]'),
   // ]);
   console.info(debugId, 'trying to take a screenshot');
-  await page.waitFor(500);
+  await page.waitFor(config.screenshotDelay);
   await page.screenshot({
-    path: '/tmp/screenshot.jpg', type: 'jpeg', quality: 50, fullPage: true });
+    path: '/tmp/screenshot.jpg', type: 'jpeg', quality: config.screenshotQuality, fullPage: config.fullPage });
   // , fullPage: true});
 
   // const aws = require('aws-sdk');
@@ -92,9 +92,13 @@ exports.run = async (browser,
       }
     );
     console.info(debugId, 'trying to upload diff to s3');
-    const diffPath = await uploadToS3(diffBinaryData, 
-      'image/png', `${snapshotIdentifier}--diff`,
-    );
+    let diffPath = '';
+    if (!pass) {
+      // only upload if the test didn't pass
+      diffPath = await uploadToS3(diffBinaryData, 
+        'image/png', `${snapshotIdentifier}--diff`,
+      );
+    }
 
     resultObject.diffRatio = diffRatio;
     resultObject.totalPixels = totalPixels;
