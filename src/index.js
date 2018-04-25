@@ -57,6 +57,7 @@ exports.run = async (browser,
   //   page.click('[name=btnK]'),
   // ]);
   console.info(debugId, 'trying to take a screenshot');
+  await page.waitFor(500);
   await page.screenshot({
     path: '/tmp/screenshot.jpg', type: 'jpeg', quality: 50, fullPage: true });
   // , fullPage: true});
