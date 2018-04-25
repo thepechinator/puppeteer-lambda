@@ -77,15 +77,15 @@ exports.run = async (browser,
   const screenshotPath =
     await uploadToS3(screenshot, 'image/jpg', snapshotIdentifier);
 
-  console.info(debugId, 'trying to do diff');
-
   let resultObject = {
     baselineScreenshotPath: screenshotPath,
     url,
   };
 
   // also do the diff, if baselineBase64String exists
+  // baselineBase64String
   if (false) {
+    console.info(debugId, 'doing diff');
     const { diffPixelCount, diffRatio, totalPixels, diffBinaryData, pass } = await imageDiff(baselineBase64String, screenshot, 
       {
         failureThreshold: config.failureThreshold,
@@ -110,9 +110,10 @@ exports.run = async (browser,
   } else {
     if (config.autoAddNewBaselines) {
       console.info(debugId, 'adding new baseline to imageData');
-      resultObject.imageData = {
-        newBaselineBase64String: screenshot,
-      };
+      // try not passing this back to see if this makes things faster
+      // resultObject.imageData = {
+      //   newBaselineBase64String: screenshot,
+      // };
     }
 
     resultObject.performedDiff = false;
