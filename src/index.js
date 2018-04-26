@@ -64,8 +64,10 @@ exports.run = async (browser,
   await page.screenshot({
     path: '/tmp/screenshot.jpg',
     type: 'jpeg', 
-    quality: config.screenshotQuality, 
-    fullPage: config.fullPage,
+    quality: config.screenshotQuality,
+    // have to use either clip or fullPage ... they
+    // are exclusive of one another
+    // fullPage: config.fullPage,
     clip: {
       x: 0,
       y: 0,
