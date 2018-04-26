@@ -62,7 +62,7 @@ exports.run = async (browser,
   console.info(debugId, 'trying to take a screenshot');
   await page.waitFor(config.screenshotDelay);
   await page.screenshot({
-    path: '/tmp/screenshot.jpg',
+    path: `/tmp/${snapshotIdentifier}.jpg`,
     type: 'jpeg', 
     quality: config.screenshotQuality,
     // have to use either clip or fullPage ... they
@@ -81,7 +81,7 @@ exports.run = async (browser,
   // const s3 = new aws.S3({apiVersion: '2006-03-01'});
   console.info(debugId, 'trying to read from the screenshot file');
   // const fs = require('fs');
-  const screenshot = await sharp('/tmp/screenshot.jpg')
+  const screenshot = await sharp(`/tmp/${snapshotIdentifier}.jpg`)
     // need to figure out how to crop and resize a second time
     // screenshotMaxHeight
     // .crop()
