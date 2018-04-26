@@ -67,13 +67,13 @@ exports.run = async (browser,
     quality: config.screenshotQuality,
     // have to use either clip or fullPage ... they
     // are exclusive of one another
-    // fullPage: config.fullPage,
-    clip: {
-      x: 0,
-      y: 0,
-      width: viewport.width,
-      height: config.screenshotMaxHeight,
-    },
+    fullPage: config.fullPage,
+    // clip: {
+    //   x: 0,
+    //   y: 0,
+    //   width: viewport.width,
+    //   height: config.screenshotMaxHeight,
+    // },
   });
   // , fullPage: true});
 
@@ -82,8 +82,11 @@ exports.run = async (browser,
   console.info(debugId, 'trying to read from the screenshot file');
   // const fs = require('fs');
   const screenshot = await sharp('/tmp/screenshot.jpg')
+    // need to figure out how to crop and resize a second time
+    // screenshotMaxHeight
+    // .crop()
     // try resizing it to save space
-    .resize(Math.floor(viewport.width / 4), null)
+    .resize(Math.floor(viewport.width * config.screenshotResizePercent), null)
     .webp()
     .toBuffer();
   // const screenshot = await new Promise((resolve, reject) => {
@@ -130,9 +133,9 @@ exports.run = async (browser,
     if (config.autoAddNewBaselines) {
       console.info(debugId, 'adding new baseline to imageData');
       // try not passing this back to see if this makes things faster
-      // resultObject.imageData = {
-      //   newBaselineBase64String: screenshot,
-      // };
+      resultObject.imageData = {
+        newBaselineBase64String: screenshot,
+      };
     }
 
     resultObject.performedDiff = false;
