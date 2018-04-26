@@ -35,6 +35,9 @@ const s3ContentTypes = {
   'application/pdf': {
     extension: 'pdf',
   },
+  'image/webp': {
+    extension: 'webp',
+  },
 };
 
 const uploadToS3 = async (

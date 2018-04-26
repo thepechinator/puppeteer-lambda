@@ -1,7 +1,9 @@
+const sharp = require('sharp');
+const moment = require('moment');
+
 const setup = require('./starter-kit/setup');
 const {uploadToS3} = require('./starter-kit/uploader');
 const imageDiff = require('./starter-kit/image-diff');
-const moment = require('moment');
 
 exports.handler = async (event, context, callback) => {
   const { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config } = JSON.parse(event.body);
@@ -60,22 +62,37 @@ exports.run = async (browser,
   console.info(debugId, 'trying to take a screenshot');
   await page.waitFor(config.screenshotDelay);
   await page.screenshot({
-    path: '/tmp/screenshot.jpg', type: 'jpeg', quality: config.screenshotQuality, fullPage: config.fullPage });
+    path: '/tmp/screenshot.jpg',
+    type: 'jpeg', 
+    quality: config.screenshotQuality, 
+    fullPage: config.fullPage,
+    clip: {
+      x: 0,
+      y: 0,
+      width: viewport.width,
+      height: config.screenshotMaxHeight,
+    },
+  });
   // , fullPage: true});
 
   // const aws = require('aws-sdk');
   // const s3 = new aws.S3({apiVersion: '2006-03-01'});
   console.info(debugId, 'trying to read from the screenshot file');
-  const fs = require('fs');
-  const screenshot = await new Promise((resolve, reject) => {
-    fs.readFile('/tmp/screenshot.jpg', (err, data) => {
-      if (err) return reject(err);
-      resolve(data);
-    });
-  });
+  // const fs = require('fs');
+  const screenshot = await sharp('/tmp/screnshot.jpg')
+    // try resizing it to save space
+    .resize({ width: viewport.width/4, height: null })
+    .webp()
+    .toBuffer();
+  // const screenshot = await new Promise((resolve, reject) => {
+  //   fs.readFile('/tmp/screenshot.jpg', (err, data) => {
+  //     if (err) return reject(err);
+  //     resolve(data);
+  //   });
+  // });
   console.info(debugId, 'trying to upload file..');
   const screenshotPath =
-    await uploadToS3(screenshot, 'image/jpg', snapshotIdentifier);
+    await uploadToS3(screenshot, 'image/webp', snapshotIdentifier);
 
   let resultObject = {
     baselineScreenshotPath: screenshotPath,
