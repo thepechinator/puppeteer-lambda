@@ -81,14 +81,32 @@ exports.run = async (browser,
   // const s3 = new aws.S3({apiVersion: '2006-03-01'});
   console.info(debugId, 'trying to read from the screenshot file');
   // const fs = require('fs');
-  const screenshot = await sharp(`/tmp/${snapshotIdentifier}.jpg`)
-    // need to figure out how to crop and resize a second time
-    // screenshotMaxHeight
-    // .crop()
-    // try resizing it to save space
-    // .resize(Math.floor(viewport.width * config.screenshotResizePercent), null)
-    .webp()
-    .toBuffer();
+
+  let screenshot = null;
+  let contentType = 'image/jpg';
+  const { screenshotContentType } = config;
+
+  if (screenshotContentType === 'webp') {
+    contentType = 'image/webp';
+    screenshot = await sharp(`/tmp/${snapshotIdentifier}.${screenshotContentType}`)
+      // need to figure out how to crop and resize a second time
+      // screenshotMaxHeight
+      // .crop()
+      // try resizing it to save space
+      .resize(Math.floor(viewport.width * config.screenshotResizePercent), null)
+      .webp()
+      .toBuffer();
+
+  } else {
+    screenshot = await sharp(`/tmp/${snapshotIdentifier}.${screenshotContentType}`)
+      // need to figure out how to crop and resize a second time
+      // screenshotMaxHeight
+      // .crop()
+      // try resizing it to save space
+      // .resize(Math.floor(viewport.width * config.screenshotResizePercent), null)
+      // .webp()
+      .toBuffer();
+  }
   // const screenshot = await new Promise((resolve, reject) => {
   //   fs.readFile('/tmp/screenshot.jpg', (err, data) => {
   //     if (err) return reject(err);
@@ -97,7 +115,7 @@ exports.run = async (browser,
   // });
   console.info(debugId, 'trying to upload file..');
   const screenshotPath =
-    await uploadToS3(screenshot, 'image/webp', snapshotIdentifier);
+    await uploadToS3(screenshot, contentType, snapshotIdentifier);
 
   let resultObject = {
     baselineScreenshotPath: screenshotPath,
