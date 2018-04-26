@@ -81,7 +81,7 @@ exports.run = async (browser,
   // const s3 = new aws.S3({apiVersion: '2006-03-01'});
   console.info(debugId, 'trying to read from the screenshot file');
   // const fs = require('fs');
-  const screenshot = await sharp('/tmp/screnshot.jpg')
+  const screenshot = await sharp('/tmp/screenshot.jpg')
     // try resizing it to save space
     .resize(Math.floor(viewport.width / 4), null)
     .webp()
