@@ -83,7 +83,7 @@ exports.run = async (browser,
   // const fs = require('fs');
   const screenshot = await sharp('/tmp/screnshot.jpg')
     // try resizing it to save space
-    .resize({ width: viewport.width/4, height: null })
+    .resize(Math.floor(viewport.width / 4), null)
     .webp()
     .toBuffer();
   // const screenshot = await new Promise((resolve, reject) => {
