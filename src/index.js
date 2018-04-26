@@ -88,7 +88,7 @@ exports.run = async (browser,
 
   if (screenshotContentType === 'webp') {
     contentType = 'image/webp';
-    screenshot = await sharp(`/tmp/${snapshotIdentifier}.${screenshotContentType}`)
+    screenshot = await sharp(`/tmp/${snapshotIdentifier}.jpg`)
       // need to figure out how to crop and resize a second time
       // screenshotMaxHeight
       // .crop()
@@ -98,7 +98,7 @@ exports.run = async (browser,
       .toBuffer();
 
   } else {
-    screenshot = await sharp(`/tmp/${snapshotIdentifier}.${screenshotContentType}`)
+    screenshot = await sharp(`/tmp/${snapshotIdentifier}.jpg`)
       // need to figure out how to crop and resize a second time
       // screenshotMaxHeight
       // .crop()
