@@ -86,7 +86,7 @@ exports.run = async (browser,
     // screenshotMaxHeight
     // .crop()
     // try resizing it to save space
-    .resize(Math.floor(viewport.width * config.screenshotResizePercent), null)
+    // .resize(Math.floor(viewport.width * config.screenshotResizePercent), null)
     .webp()
     .toBuffer();
   // const screenshot = await new Promise((resolve, reject) => {
