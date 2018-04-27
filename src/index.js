@@ -6,7 +6,10 @@ const moment = require('moment');
 // const imageDiff = require('./starter-kit/image-diff');
 
 exports.handler = async (event, context, callback) => {
-  const { id, clientInvokeTime } = event.data;
+  // for calls hitting the api gateway
+  const { id, clientInvokeTime } = JSON.parse(event.body);
+  // for direct lambda calls
+  // const { id, clientInvokeTime } = event.data;
   const result = {};
   result.invokeTime = moment().format('MM/DD/YYYY HH:mm:ss');
   console.info('got id and clientInvokeTime', id, clientInvokeTime);
