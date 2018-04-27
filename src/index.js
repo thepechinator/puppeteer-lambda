@@ -6,15 +6,19 @@ const moment = require('moment');
 // const imageDiff = require('./starter-kit/image-diff');
 
 exports.handler = async (event, context, callback) => {
+  const { id, clientInvokeTime } = event.data;
   const result = {};
   result.invokeTime = moment().format('MM/DD/YYYY HH:mm:ss');
+  console.info('got id and clientInvokeTime', id, clientInvokeTime);
+  console.info('invoked at', result.invokeTime);
   setTimeout(() => {
     result.returnTime = moment().format('MM/DD/YYYY HH:mm:ss');
 
+    console.info('returning', result);
     callback(null, {
       statusCode: 200,
       body: JSON.stringify({status: 200, result})})
-  }, 10000);
+  }, 3000);
 };
 
 // exports.handler = async (event, context, callback) => {
