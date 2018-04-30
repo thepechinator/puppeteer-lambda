@@ -39,7 +39,11 @@ exports.handler = async (event, context, callback) => {
     (err) => {
       console.info(debugId, 'ran into error');
       console.info(err);
-      callback(err);
+      callback(null, 
+        { 
+          statusCode: 500, 
+          body: { statusCode: 500, error: 'Internal Server Error', internalError: err }
+        });
     }
   );
 };
