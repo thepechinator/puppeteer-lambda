@@ -42,7 +42,8 @@ exports.handler = async (event, context, callback) => {
       callback(null, 
         { 
           statusCode: 500, 
-          body: JSON.stringify({ statusCode: 500, error: 'Internal Server Error', internalError: JSON.stringify(err) }),
+          body: JSON.stringify({ statusCode: 500, error: 'Internal Server Error', 
+          internalError: JSON.stringify({ message: err.message, stack: err.stack }) }),
         });
     }
   );
