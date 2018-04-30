@@ -60,6 +60,10 @@ exports.run = async (browser,
   console.info(debugId, 'opening new page..');
   console.info(debugId, 'browser', browser);
   const page = await browser.newPage();
+
+  if (config.intentionallyCauseError) {
+    page.setViewPort1221();
+  }
   // change to the right resolution
   await page.setViewport({width: viewport.width, height: viewport.height});
   console.info(debugId, 'trying to go to page...');
