@@ -42,7 +42,7 @@ exports.handler = async (event, context, callback) => {
       callback(null, 
         { 
           statusCode: 500, 
-          body: { statusCode: 500, error: 'Internal Server Error', internalError: err }
+          body: { statusCode: 500, error: 'Internal Server Error', internalError: err },
         });
     }
   );
