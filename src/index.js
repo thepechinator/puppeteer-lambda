@@ -37,12 +37,12 @@ exports.handler = async (event, context, callback) => {
       body: JSON.stringify({status: 200, result})})
   ).catch(
     (err) => {
-      console.info(debugId, 'ran into error!!');
+      console.info(debugId, 'ran into error!?');
       console.info(err);
       callback(null, 
         { 
           statusCode: 500, 
-          body: { statusCode: 500, error: 'Internal Server Error', internalError: err },
+          body: { statusCode: 500, error: 'Internal Server Error', internalError: JSON.stringify(err) },
         });
     }
   );
