@@ -26,12 +26,22 @@ const imageDiff = require('./starter-kit/image-diff');
 
 exports.handler = async (event, context, callback) => {
   const { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config } = JSON.parse(event.body);
+  const startTime = Date.now();
   console.info(debugId, 'received url', url, 'and snapshotIdentifier', snapshotIdentifier);
   console.info(debugId, 'with config', config);
   // For keeping the browser launch
   context.callbackWaitsForEmptyEventLoop = false;
   const browser = await setup.getBrowser();
-  exports.run(browser, { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config }).then(
+  exports.run(browser, 
+    {
+      url,
+      snapshotIdentifier,
+      debugId,
+      baselineBase64String,
+      viewport,
+      startTime,
+      config,
+    }).then(
     (result) => callback(null, {
       statusCode: 200,
       body: JSON.stringify({status: 200, result})})
@@ -56,6 +66,7 @@ exports.run = async (browser,
     debugId,
     baselineBase64String,
     viewport = { width: 1024, height: 768 },
+    startTime,
     // will contain some stuff we don't need for now,
     // but has some stuff we want
     config,
@@ -146,12 +157,17 @@ exports.run = async (browser,
     await uploadToS3(screenshot, contentType, snapshotIdentifier);
 
   let resultObject = {
-    baselineScreenshotPath: screenshotPath,
+    id: snapshotIdentifier,
+    // the same as the identifier, for now
+    // actual path resolution will be done by the reporter and importer
+    baselineFileName: snapshotIdentifier,
+    testScreenshotPath: screenshotPath,
     url,
   };
 
   // also do the diff, if baselineBase64String exists
   // baselineBase64String
+  // The existence of this means a baseline exists from the caller.
   if (baselineBase64String) {
     console.info(debugId, 'doing diff');
     const { diffPixelCount, diffRatio, totalPixels, diffBinaryData, pass } = await imageDiff(baselineBase64String, screenshot, 
@@ -169,21 +185,38 @@ exports.run = async (browser,
       );
     }
 
-    resultObject.diffRatio = diffRatio;
-    resultObject.totalPixels = totalPixels;
+    // resultObject.diffRatio = diffRatio;
+    // resultObject.totalPixels = totalPixels;
+    // resultObject.diffPath = diffPath;
+    // resultObject.diffPixelCount = diffPixelCount;
+
+    // may not be needed
     resultObject.performedDiff = true;
-    resultObject.diffPath = diffPath;
-    resultObject.diffPixelCount = diffPixelCount;
+    // simple boolean flag that tells us whether the test failed or passed
     resultObject.pass = pass;
+    resultObject.status = pass ? 'pass' : 'fail';
+    resultObject.diffDetails = {
+      ratio: diffRatio,
+      totalPixels,
+      path: diffPath,
+      pixelCount: diffPixelCount,
+    };
   } else {
+    // for cases where we are not auto-adding the baseline image to
+    // some destination, we need a way for the reporter to know to add this
+    // new baseline when the bless command is run
     if (config.autoAddNewBaselines) {
       console.info(debugId, 'adding new baseline to imageData');
       // try not passing this back to see if this makes things faster
       resultObject.imageData = {
         newBaselineBase64String: screenshot,
       };
+      resultObject.baselineAutoAdded = true;
     }
 
+    // Maybe we can use this to indicate to the reporter this baseline needs
+    // to be added.
+    resultObject.newBaseline = true;
     resultObject.performedDiff = false;
   }
   resultObject.returnTime = moment().format('MM/DD/YYYY HH:mm:ss');
@@ -205,5 +238,7 @@ exports.run = async (browser,
   console.info(debugId, 'closing page');
   await page.close();
   console.info(debugId, 'returning data');
+  // How long the test took to execute.
+  resultObject.executionTime = startTime - Date.now();
   return resultObject;
 };
