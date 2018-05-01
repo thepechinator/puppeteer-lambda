@@ -188,7 +188,7 @@ exports.run = async (browser,
         ratio: diffRatio,
         totalPixels,
         path: diffPath,
-        pixelCount: diffPixelCount,
+        mismatchedPixels: diffPixelCount,
       };
     }
 
