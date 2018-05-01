@@ -160,7 +160,7 @@ exports.run = async (browser,
     id: snapshotIdentifier,
     // the same as the identifier, for now
     // actual path resolution will be done by the reporter and importer
-    baselineFileName: snapshotIdentifier,
+    baselineFileName: `${snapshotIdentifier}.${screenshotContentType}`,
     testScreenshotPath: screenshotPath,
     url,
   };
@@ -183,6 +183,13 @@ exports.run = async (browser,
       diffPath = await uploadToS3(diffBinaryData, 
         'image/png', `${snapshotIdentifier}--diff`,
       );
+
+      resultObject.diffDetails = {
+        ratio: diffRatio,
+        totalPixels,
+        path: diffPath,
+        pixelCount: diffPixelCount,
+      };
     }
 
     // resultObject.diffRatio = diffRatio;
@@ -195,12 +202,6 @@ exports.run = async (browser,
     // simple boolean flag that tells us whether the test failed or passed
     resultObject.pass = pass;
     resultObject.status = pass ? 'pass' : 'fail';
-    resultObject.diffDetails = {
-      ratio: diffRatio,
-      totalPixels,
-      path: diffPath,
-      pixelCount: diffPixelCount,
-    };
   } else {
     // for cases where we are not auto-adding the baseline image to
     // some destination, we need a way for the reporter to know to add this
@@ -238,7 +239,7 @@ exports.run = async (browser,
   console.info(debugId, 'closing page');
   await page.close();
   console.info(debugId, 'returning data');
-  // How long the test took to execute.
-  resultObject.executionTime = startTime - Date.now();
+  // How long the test took to execute (in milliseconds)
+  resultObject.executionTime =  Date.now() - startTime;
   return resultObject;
 };
