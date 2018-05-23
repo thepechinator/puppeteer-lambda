@@ -26,15 +26,27 @@ const imageDiff = require('./starter-kit/image-diff');
 // };
 
 exports.handler = async (event, context, callback) => {
-  const { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config } 
-    = JSON.parse(event.body);
+  const body = JSON.parse(event.body);
+
+  // For keeping the browser launched
+  // https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
+  context.callbackWaitsForEmptyEventLoop = false;
+  const browser = await setup.getBrowser();
+
+  if (body.keepAliveRequest) {
+    console.info(body.debugId, 'This is a keepAliveRequest to keep the lambda func warm. Doing nothing further. Returning.');
+    return callback(null, {
+      statusCode: 200,
+      body: JSON.stringify({status: 200}),
+    });
+  }
+  const { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config }
+    = body;
   const startTime = Date.now();
   console.info(debugId, 'received url', url, 'and snapshotIdentifier', snapshotIdentifier);
   console.info(debugId, 'with config', config);
-  // For keeping the browser launch
-  context.callbackWaitsForEmptyEventLoop = false;
-  const browser = await setup.getBrowser();
-  exports.run(browser, 
+
+  exports.run(browser,
     {
       url,
       snapshotIdentifier,
@@ -56,21 +68,21 @@ exports.handler = async (event, context, callback) => {
       console.info(err);
       // Any runtime errors we log as a 500. Other error codes will be handled
       // by the API gateway, outside of this lambda call.
-      callback(null, 
-        { 
-          statusCode: 500, 
-          body: JSON.stringify({ statusCode: 500, error: 'Internal Server Error', 
+      callback(null,
+        {
+          statusCode: 500,
+          body: JSON.stringify({ statusCode: 500, error: 'Internal Server Error',
           internalError: JSON.stringify({ message: err.message, stack: err.stack }) }),
         });
     }
   );
 };
 
-exports.run = async (browser, 
+exports.run = async (browser,
   {
     url,
     snapshotIdentifier,
-    // A unique id we pass up from the client 
+    // A unique id we pass up from the client
     debugId,
     // Existing baseline image from client (if exists)
     baselineBase64String,
@@ -95,7 +107,7 @@ exports.run = async (browser,
   // change to the right resolution
   await page.setViewport({width: viewport.width, height: viewport.height});
   // wait for the right event
-  // waitUntil: 'networkidle0', 
+  // waitUntil: 'networkidle0',
   // waitUntil: 'networkidle2',
   // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#pagegotourl-options
   // waitUntil defaults to 'load'
@@ -160,7 +172,7 @@ exports.run = async (browser,
   await page.waitFor(config.screenshotDelay);
   await page.screenshot({
     path: `/tmp/${snapshotIdentifier}.jpg`,
-    type: 'jpeg', 
+    type: 'jpeg',
     quality: config.screenshotQuality,
     // have to use either clip or fullPage ... they
     // are exclusive of one another
@@ -227,7 +239,7 @@ exports.run = async (browser,
   // The existence of this means a baseline exists from the caller.
   if (baselineBase64String) {
     console.info(debugId, 'doing diff');
-    const { diffPixelCount, diffRatio, totalPixels, diffBinaryData, pass } = await imageDiff(baselineBase64String, screenshot, 
+    const { diffPixelCount, diffRatio, totalPixels, diffBinaryData, pass } = await imageDiff(baselineBase64String, screenshot,
       {
         failureThreshold: config.failureThreshold,
         failureThresholdType: config.failureThresholdType,
@@ -237,7 +249,7 @@ exports.run = async (browser,
     let diffPath = '';
     if (!pass) {
       // only upload if the test didn't pass
-      diffPath = await uploadToS3(diffBinaryData, 
+      diffPath = await uploadToS3(diffBinaryData,
         'image/png', `${snapshotIdentifier}--diff`,
       );
 
