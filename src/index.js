@@ -34,48 +34,52 @@ exports.handler = async (event, context, callback) => {
   const browser = await setup.getBrowser();
 
   if (body.keepAliveRequest) {
+    const timeout = body.timeout || 5000;
     console.info(body.debugId, 'This is a keepAliveRequest to keep the lambda func warm. Doing nothing further. Returning.');
-    return callback(null, {
-      statusCode: 200,
-      body: JSON.stringify({status: 200}),
-    });
-  }
-  const { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config }
-    = body;
-  const startTime = Date.now();
-  console.info(debugId, 'received url', url, 'and snapshotIdentifier', snapshotIdentifier);
-  console.info(debugId, 'with config', config);
+    setTimeout(() => {
+      callback(null, {
+        statusCode: 200,
+        body: JSON.stringify({status: 200}),
+      });
+    }, timeout);
+  } else {
+    const { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config }
+      = body;
+    const startTime = Date.now();
+    console.info(debugId, 'received url', url, 'and snapshotIdentifier', snapshotIdentifier);
+    console.info(debugId, 'with config', config);
 
-  exports.run(browser,
-    {
-      url,
-      snapshotIdentifier,
-      debugId,
-      baselineBase64String,
-      viewport,
-      startTime,
-      // Other config options we may need
-      config,
-    }).then(
-    // On a successful run, we invoke the callback with what data we want to
-    // send back
-    (result) => callback(null, {
-      statusCode: 200,
-      body: JSON.stringify({status: 200, result})})
-  ).catch(
-    (err) => {
-      console.info(debugId, 'ran into error');
-      console.info(err);
-      // Any runtime errors we log as a 500. Other error codes will be handled
-      // by the API gateway, outside of this lambda call.
-      callback(null,
-        {
-          statusCode: 500,
-          body: JSON.stringify({ statusCode: 500, error: 'Internal Server Error',
-          internalError: JSON.stringify({ message: err.message, stack: err.stack }) }),
-        });
-    }
-  );
+    exports.run(browser,
+      {
+        url,
+        snapshotIdentifier,
+        debugId,
+        baselineBase64String,
+        viewport,
+        startTime,
+        // Other config options we may need
+        config,
+      }).then(
+      // On a successful run, we invoke the callback with what data we want to
+      // send back
+      (result) => callback(null, {
+        statusCode: 200,
+        body: JSON.stringify({status: 200, result})})
+    ).catch(
+      (err) => {
+        console.info(debugId, 'ran into error');
+        console.info(err);
+        // Any runtime errors we log as a 500. Other error codes will be handled
+        // by the API gateway, outside of this lambda call.
+        callback(null,
+          {
+            statusCode: 500,
+            body: JSON.stringify({ statusCode: 500, error: 'Internal Server Error',
+            internalError: JSON.stringify({ message: err.message, stack: err.stack }) }),
+          });
+      }
+    );
+  }
 };
 
 exports.run = async (browser,
