@@ -274,7 +274,7 @@ exports.run = async (browser,
     resultObject.performedDiff = true;
     // simple boolean flag that tells us whether the test failed or passed
     resultObject.pass = pass;
-    resultObject.status = pass ? 'pass' : 'fail';
+    resultObject.status = pass ? 'passed' : 'failed';
   } else {
     // for cases where we are not auto-adding the baseline image to
     // some destination, we need a way for the reporter to know to add this
