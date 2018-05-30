@@ -108,7 +108,7 @@ exports.run = async (browser,
   if (config.intentionallyCauseError) {
     page.setViewPort1221();
   }
-  page.setJavaScriptEnabled = config.javascriptEnabled;
+  page.setJavaScriptEnabled = config.jsEnabled;
   // change to the right resolution
   await page.setViewport({width: viewport.width, height: viewport.height});
   // wait for the right event
