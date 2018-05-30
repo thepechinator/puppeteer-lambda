@@ -45,7 +45,6 @@ const uploadToS3 = async (
   contentType,
   snapshotIdentifier,
 ) => {
-  console.info('upload the damn thing to s3!');
   const s3ContentType = s3ContentTypes[contentType];
   if (!s3ContentType) {
     throw new Error(`Unknown S3 Content type ${contentType}`);
