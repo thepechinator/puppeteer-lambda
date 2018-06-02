@@ -127,18 +127,21 @@ exports.run = async (browser,
   (hideSelectors.length || removeSelectors.length) && await page.evaluate((hideSelectors, removeSelectors) => {
     for (const selector of hideSelectors) {
       // eslint-disable-next-line
-      const el = document.querySelector(selector);
-      if (el) {
-        el.style.visibility = 'hidden';
+      const list = document.querySelectorAll(selector);
+      for (const el of list) {
+        if (el) {
+          el.style.visibility = 'hidden';
+        }
       }
     }
 
     for (const selector of removeSelectors) {
       // eslint-disable-next-line
-      const el = document.querySelector(selector);
-
-      if (el) {
-        el.style.display = 'none';
+      const list = document.querySelectorAll(selector);
+      for (const el of list) {
+        if (el) {
+          el.style.display = 'none';
+        }
       }
     }
   }, hideSelectors, removeSelectors);
