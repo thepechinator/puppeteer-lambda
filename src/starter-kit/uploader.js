@@ -43,13 +43,14 @@ const s3ContentTypes = {
 const uploadToS3 = async (
   data,
   contentType,
-  snapshotIdentifier,
+  // upload path won't include the extension
+  uploadPath,
 ) => {
   const s3ContentType = s3ContentTypes[contentType];
   if (!s3ContentType) {
     throw new Error(`Unknown S3 Content type ${contentType}`);
   }
-  const s3Path = `${getS3ObjectKeyPrefix()}${snapshotIdentifier}.${s3ContentType.extension}`;
+  const s3Path = `${getS3ObjectKeyPrefix()}${uploadPath}.${s3ContentType.extension}`;
   await s3
     .putObject({
       Bucket: getS3BucketName(),

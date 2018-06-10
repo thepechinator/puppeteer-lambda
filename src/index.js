@@ -43,7 +43,7 @@ exports.handler = async (event, context, callback) => {
       });
     }, timeout);
   } else {
-    const { url, snapshotIdentifier, debugId, baselineBase64String, viewport, config }
+    const { url, snapshotIdentifier, uploadDirectory, debugId, baselineBase64String, viewport, config }
       = body;
     const startTime = Date.now();
     console.info(debugId, 'received url', url, 'and snapshotIdentifier', snapshotIdentifier);
@@ -53,6 +53,7 @@ exports.handler = async (event, context, callback) => {
       {
         url,
         snapshotIdentifier,
+        uploadDirectory,
         debugId,
         baselineBase64String,
         viewport,
@@ -86,6 +87,11 @@ exports.run = async (browser,
   {
     url,
     snapshotIdentifier,
+    // all screenshots get placed in the same bucket.
+    // this parameter helps us split them up in their own
+    // subdirectory per run.
+    // An example of a value here is like os.hostname() + '/' + timestamp + '/'
+    uploadDirectory,
     // A unique id we pass up from the client
     debugId,
     // Existing baseline image from client (if exists)
@@ -179,7 +185,7 @@ exports.run = async (browser,
   console.info(debugId, 'trying to take a screenshot');
   await page.waitFor(config.screenshotDelay);
   await page.screenshot({
-    path: `/tmp/${snapshotIdentifier}.jpg`,
+    path: `/tmp/${uploadDirectory}${snapshotIdentifier}.jpg`,
     type: 'jpeg',
     quality: config.screenshotQuality,
     // have to use either clip or fullPage ... they
@@ -204,7 +210,7 @@ exports.run = async (browser,
 
   if (screenshotContentType === 'webp') {
     contentType = 'image/webp';
-    screenshot = await sharp(`/tmp/${snapshotIdentifier}.jpg`)
+    screenshot = await sharp(`/tmp/${uploadDirectory}${snapshotIdentifier}.jpg`)
       // need to figure out how to crop and resize a second time
       // screenshotMaxHeight
       // .crop()
@@ -214,7 +220,7 @@ exports.run = async (browser,
       .toBuffer();
 
   } else {
-    screenshot = await sharp(`/tmp/${snapshotIdentifier}.jpg`)
+    screenshot = await sharp(`/tmp/${uploadDirectory}${snapshotIdentifier}.jpg`)
       // need to figure out how to crop and resize a second time
       // screenshotMaxHeight
       // .crop()
@@ -223,15 +229,10 @@ exports.run = async (browser,
       // .webp()
       .toBuffer();
   }
-  // const screenshot = await new Promise((resolve, reject) => {
-  //   fs.readFile('/tmp/screenshot.jpg', (err, data) => {
-  //     if (err) return reject(err);
-  //     resolve(data);
-  //   });
-  // });
+
   console.info(debugId, 'trying to upload file..');
   const screenshotPath =
-    await uploadToS3(screenshot, contentType, snapshotIdentifier);
+    await uploadToS3(screenshot, contentType, `${uploadDirectory}${snapshotIdentifier}`);
 
   let resultObject = {
     id: snapshotIdentifier,
