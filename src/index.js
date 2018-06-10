@@ -183,9 +183,10 @@ exports.run = async (browser,
   // Long-term goal: if a lambda times out, it 502s... and we don't have a good way to handle that... yet.
 
   console.info(debugId, 'trying to take a screenshot');
+  const tmpPath = `/tmp/${uploadDirectory.replace(/\//g, '_')}${snapshotIdentifier}.jpg`;
   await page.waitFor(config.screenshotDelay);
   await page.screenshot({
-    path: `/tmp/${uploadDirectory}${snapshotIdentifier}.jpg`,
+    path: tmpPath,
     type: 'jpeg',
     quality: config.screenshotQuality,
     // have to use either clip or fullPage ... they
@@ -210,7 +211,7 @@ exports.run = async (browser,
 
   if (screenshotContentType === 'webp') {
     contentType = 'image/webp';
-    screenshot = await sharp(`/tmp/${uploadDirectory}${snapshotIdentifier}.jpg`)
+    screenshot = await sharp(tmpPath)
       // need to figure out how to crop and resize a second time
       // screenshotMaxHeight
       // .crop()
@@ -220,7 +221,7 @@ exports.run = async (browser,
       .toBuffer();
 
   } else {
-    screenshot = await sharp(`/tmp/${uploadDirectory}${snapshotIdentifier}.jpg`)
+    screenshot = await sharp(tmpPath)
       // need to figure out how to crop and resize a second time
       // screenshotMaxHeight
       // .crop()
