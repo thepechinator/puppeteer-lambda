@@ -61,7 +61,8 @@ const uploadToS3 = async (
     })
     .promise();
 
-  return `https://${getS3BucketUrl()}/${s3Path}`;
+  // the s3Path we return needs to be encoded
+  return `https://${getS3BucketUrl()}/${encodeURIComponent(s3Path)}`;
 };
 
 module.exports = {
