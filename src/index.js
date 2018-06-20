@@ -126,13 +126,6 @@ exports.run = async (browser,
   // console.log((await page.content()).slice(0, 500));
   console.info(debugId, 'Loaded page');
 
-  console.info(debugId, 'starting worker loop');
-  for (const worker of page.workers()) {
-    console.info(debugId, worker.url());
-  }
-
-  console.info(debugId, 'past worker loop');
-
   // Now we need to wait for a certain element so we may hide or remove it.
 
   // hide or display none element on page
